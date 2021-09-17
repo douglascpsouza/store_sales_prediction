@@ -104,11 +104,9 @@ celerybeat.pid
 # Environments
 .env
 .venv
-env/
-venv/
-ENV/
-env.bak/
-venv.bak/
+.ve_sales_prediction
+ve_sales_prediction/
+ve_sales_prediction.bak/
 
 # Spyder project settings
 .spyderproject
@@ -127,3 +125,10 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# VS Code stuff:
+.vscode
+
+# My testing stuffs
+a0*.py
+a0*.ipynb

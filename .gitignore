@@ -132,3 +132,6 @@ dmypy.json
 # My testing stuffs
 a0*.py
 a0*.ipynb
+
+# machine learning trained model
+rossmann_ml_model/

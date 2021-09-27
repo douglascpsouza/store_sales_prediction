@@ -134,4 +134,4 @@ a0*.py
 a0*.ipynb
 
 # machine learning trained model
-rossmann_ml_model/
+ml_model/

@@ -27,22 +27,21 @@ Confirmed: 	0
 Tentative: 	27
 Rejected: 	0
 Iteration: 	8 / 100
-Confirmed: 	17
+Confirmed: 	18
 Tentative: 	0
-Rejected: 	10
+Rejected: 	9
 
 
 BorutaPy finished running.
 
 Iteration: 	9 / 100
-Confirmed: 	17
+Confirmed: 	18
 Tentative: 	0
-Rejected: 	10
+Rejected: 	9
 
 
 List of columns selected by Boruta:
-store, promo, store_type, assortment, competition_distance, competition_open_since_month, competition_open_since_year, promo2, promo2_since_week, promo2_since_year, competition_months_old, promo2_months_old, month_cos, day_sin, day_cos, day_of_week_sin, day_of_week_cos.
+store, promo, store_type, assortment, competition_distance, competition_open_since_month, competition_open_since_year, promo2, promo2_since_week, promo2_since_year, competition_months_old, promo2_months_old, month_cos, day_sin, day_cos, day_of_week_sin, day_of_week_cos, week_of_year_cos.
 
 List of columns rejected by Boruta:
-month_sin, promo2_active, school_holiday, st_hol_christmas, st_hol_easter, st_hol_none, st_hol_public, week_of_year_cos, week_of_year_sin, year.
-​
+month_sin, promo2_active, school_holiday, st_hol_0, st_hol_a, st_hol_b, st_hol_c, week_of_year_sin, year.

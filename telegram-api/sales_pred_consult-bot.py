@@ -18,7 +18,7 @@ from flask import Flask, request, Response
 # https://api.telegram.org/bot2035600574:AAEhFg2lJFdWFeG8I4f_ibV0PGKS9N3VPXk/sendMessage?chat_id=5555555&text=Hello
 
 # contants
-TOKEN = '2035600574:AAEhFg2lJFdWFeG8I4f_ibV0PGKS9N3VPXk'
+TOKEN = ''
 
 
 def send_message(chat_id, text):

@@ -131,6 +131,7 @@ dmypy.json
 
 # My testing stuffs
 a0*.py
+a0*.txt
 a0*.ipynb
 
 # machine learning trained model

@@ -5,44 +5,33 @@ import pandas as pd
 from flask import Flask, request, Response
 
 
-# Bot info
-# https://api.telegram.org/bot2035600574:AAEhFg2lJFdWFeG8I4f_ibV0PGKS9N3VPXk/getMe
-
-# get updates
-# https://api.telegram.org/bot2035600574:AAEhFg2lJFdWFeG8I4f_ibV0PGKS9N3VPXk/getUpdates
-
-# Webhook updates
-# https://api.telegram.org/bot2035600574:AAEhFg2lJFdWFeG8I4f_ibV0PGKS9N3VPXk/setWebhook?url=https://sales-pred-telegram.herokuapp.com/
-
-# send message - chat_id and text are mandatory
-# https://api.telegram.org/bot2035600574:AAEhFg2lJFdWFeG8I4f_ibV0PGKS9N3VPXk/sendMessage?chat_id=5555555&text=Hello
-
 # contants
 TOKEN = ''
 
 
-def send_message(chat_id, text):
-    url = f'https://api.telegram.org/bot{TOKEN}/'
-    url = url + f'sendMessage?chat_id={chat_id}'
+def parse_message(message):
 
-    r = requests.post(url, json={'text': text})
-    print(f'Status Code: {r.status_code}')
+    # get chat_id #
+    chat_id = message['message']['chat']['id']
+    # get text with store ids numbers
+    store_ids_text = message['message']['text']
+    # remove spaces and split text using commas
+    store_ids = pd.Series(store_ids_text.strip().split(','))
+    # extract the numbers and set type as int
+    store_ids = list(store_ids.str.extractall("(\d+)")[0].astype(int))
 
-    return None
+    return chat_id, store_ids
 
 
-def load_dataset(store_id=1):
+def load_dataset(store_ids):
 
     # loading test dataset
     test = pd.read_csv('stores_info/test.csv')
     stores = pd.read_csv('stores_info/store.csv')
-
     # merge test dataset with store dataset
     df_test = pd.merge(test, stores, how='left', on='Store')
-
     # choose store
-    df_test = df_test[df_test['Store'] == store_id]
-
+    df_test = df_test[df_test['Store'].isin(store_ids)]
     # test if dataframe is not empty
     if not df_test.empty:
         # remove closed day and null
@@ -50,7 +39,7 @@ def load_dataset(store_id=1):
         # convert dataframe to json
         data = json.dumps(df_test.to_dict(orient='records'))
     else:
-        data = 'error'
+        data = {}
 
     return data
 
@@ -73,19 +62,29 @@ def predict(data):
     return d1
 
 
-def parse_message(message):
+def compose_message(d2):
 
-    # get chat_id #
-    chat_id = message['message']['chat']['id']
-    # get store_id # and try to convert as int
-    store_id = message['message']['text']
-    store_id = store_id.strip().replace('/', '')
-    try:
-        store_id = int(store_id)
-    except ValueError:
-        store_id = 'error'
+    # number of reports is limited to 50 stores ids
+    if len(d2) > 50:
+        d2 = d2.iloc[0:50]
+    # message headline
+    msg = 'Sales forecast for the next 7 weeks:\n\n'
+    # concatenate each store sales prediction in the response message
+    for i in range(len(d2)):
+        msg += f"Store number:{d2.loc[i, 'store']:4} - ${d2.loc[i, 'prediction']:,.2f}\n\n"
+    
+    return msg
 
-    return chat_id, store_id
+
+def send_message(chat_id, text):
+
+    url = f'https://api.telegram.org/bot{TOKEN}/'
+    url = url + f'sendMessage?chat_id={chat_id}'
+
+    r = requests.post(url, json={'text': text})
+    print(f'Status Code: {r.status_code}')
+
+    return None
 
 
 # Initialize API
@@ -96,23 +95,21 @@ def index():
 
     if request.method == 'POST':
         message = request.get_json()
-
         # calling function that extracts chat and store Ids
-        chat_id, store_id = parse_message(message)
-
-        # check if store_id is a valid store number or something else
-        if store_id != 'error':
-            
+        chat_id, store_ids = parse_message(message)
+        # check if there is a store_id number in the list
+        if len(store_ids) > 0:
             # loading data
-            data = load_dataset(store_id)
+            data = load_dataset(store_ids)
             # check if dataframe was loaded correctly
-            if data != 'error':
+            if len(data) > 0:
                 # prediction
                 d1 = predict(data)
                 # prediction for all sales in the next 7 weeks (by store)
                 d2 = d1[['store', 'prediction']].groupby('store').sum().reset_index()
+                # 
+                msg = compose_message(d2)
                 # send message
-                msg = f"The sales forecast for the next 7 weeks for Store No. {d2.loc[0, 'store']} is ${d2.loc[0, 'prediction']:,.2f}."
                 send_message(chat_id, text=msg)
                 return Response('OK', status=200)
             # response to a non existing store
@@ -123,7 +120,7 @@ def index():
         else:
             send_message(chat_id, text='Store ID is not valid.')
             return Response('OK', status=200)
-    # answer to a 'GET' message
+    # answer to 'GET' method
     else:
         return '<h1> Sales Prediction Telegram Bot </h1>'
 
